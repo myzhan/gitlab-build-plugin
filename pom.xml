@@ -7,15 +7,15 @@
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
     <!-- Baseline Jenkins version you use to build and test the plugin. Users must have this version or newer to run. -->
-    <version>1.580.1</version>
+    <version>1.481</version>
     <relativePath/>
   </parent>
   <groupId>com.github.myzhan</groupId>
-  <artifactId>gitlab-webhook-trigger</artifactId>
+  <artifactId>gitlab-payload</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
-  <name>Gitlab Webhook Trigger</name>
+  <name>Gitlab Payload Plugin</name>
   <description></description>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/TODO+Plugin</url>
   <licenses>

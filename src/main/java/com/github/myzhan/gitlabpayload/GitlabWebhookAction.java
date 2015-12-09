@@ -1,4 +1,4 @@
-package com.github.myzhan.gitlabwebhooktrigger;
+package com.github.myzhan.gitlabpayload;
 
 import hudson.model.*;
 import net.sf.json.JSONObject;

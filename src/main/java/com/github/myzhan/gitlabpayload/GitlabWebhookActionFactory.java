@@ -1,4 +1,4 @@
-package com.github.myzhan.gitlabwebhooktrigger;
+package com.github.myzhan.gitlabpayload;
 
 import hudson.Extension;
 import hudson.model.AbstractProject;
