@@ -19,7 +19,7 @@ public class GitlabWebhookAction implements Action {
 
     public void doIndex(StaplerRequest request, StaplerResponse response) throws IOException, ServletException {
         if (request.getMethod().equals("GET")) {
-            response.getWriter().print("hello world");
+            response.sendRedirect("readme");
             return;
         }
 
