@@ -1,4 +1,4 @@
-package com.github.myzhan.gitlabpayload;
+package com.github.myzhan.gitlab;
 
 import hudson.Extension;
 import hudson.model.AbstractProject;

@@ -1,4 +1,4 @@
-package com.github.myzhan.gitlabpayload;
+package com.github.myzhan.gitlab;
 
 import hudson.model.*;
 import net.sf.json.JSONObject;
@@ -51,7 +51,7 @@ public class GitlabWebhookAction implements Action {
         List<Action> actions = new ArrayList<Action>();
         actions.add(new ParametersAction(values));
 
-        Hudson.getInstance().getQueue().schedule2((Queue.Task) project, 0, actions);
+        Hudson.getInstance().getQueue().schedule((Queue.Task) project, 0, actions);
         response.getWriter().print("ok, scheduled.");
 
     }
@@ -65,6 +65,20 @@ public class GitlabWebhookAction implements Action {
             List<ParameterValue> values = new ArrayList<ParameterValue>();
             JSONObject jsonPayLoad = JSONObject.fromObject(body);
             GitlabWebHookPayload payload = (GitlabWebHookPayload)JSONObject.toBean(jsonPayLoad, GitlabWebHookPayload.class);
+
+            // extract branch or tag from ref
+            String refStr =  payload.getRef();
+            String refSubStr = refStr.substring(refStr.lastIndexOf("/")+1, refStr.length());
+            if (payload.getObject_kind().equals("push")){
+                // find branch
+                values.add(new StringParameterValue("GITLAB_BRANCH", refSubStr));
+            }else if (payload.getObject_kind().equals("tag_push")){
+                // find tag
+                values.add(new StringParameterValue("GITLAB_TAG", refSubStr));
+            }else{
+                // unknown object kind, do nothing
+                return new ArrayList<ParameterValue>();
+            }
 
             // exposed environment vars
             StringParameterValue objectKind = new StringParameterValue("GITLAB_OBJECT_KIND", payload.getObject_kind());
@@ -100,17 +114,14 @@ public class GitlabWebhookAction implements Action {
         }
     }
 
-    @Override
     public String getIconFileName() {
         return "clock.gif";
     }
 
-    @Override
     public String getDisplayName() {
         return "Gitlab Webhook";
     }
 
-    @Override
     public String getUrlName() {
         return "webhook";
     }

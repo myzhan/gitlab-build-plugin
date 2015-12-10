@@ -3,5 +3,5 @@
   This view is used to render the installed plugins page.
 -->
 <div>
-  This plugin adds webhook action to jenkins project, receives webhook payload from gitlab and triggers a build.
+  This plugin adds a webhook action to jenkins project, receives webhook payload from gitlab and triggers a parameterized build.
 </div>

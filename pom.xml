@@ -7,17 +7,17 @@
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
     <!-- Baseline Jenkins version you use to build and test the plugin. Users must have this version or newer to run. -->
-    <version>1.481</version>
+    <version>1.580</version>
     <relativePath/>
   </parent>
   <groupId>com.github.myzhan</groupId>
-  <artifactId>gitlab-payload</artifactId>
+  <artifactId>gitlab-build</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
-  <name>Gitlab Payload Plugin</name>
-  <description></description>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/TODO+Plugin</url>
+  <name>Gitlab Build Plugin</name>
+  <description>a jenkins plugin that receives webhook payload from gitlab, and trigger a  parameterized build</description>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/Gilab+Build+Plugin</url>
   <licenses>
     <license>
       <name>MIT License</name>

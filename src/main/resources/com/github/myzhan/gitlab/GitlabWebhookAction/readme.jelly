@@ -9,8 +9,11 @@
         </l:side-panel>
         <l:main-panel>
             <h1>
-                This plugin
+                Jenkins Gitlab Build Plugin
             </h1>
+            <h2>
+                <a href="https://github.com/myzhan/gitlab-build-plugin">Home Page</a>
+            </h2>
         </l:main-panel>
    </l:layout>
 </j:jelly>
