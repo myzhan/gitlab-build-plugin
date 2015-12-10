@@ -39,7 +39,7 @@ This plugin extracts several parameters from the json payload, and trigger a bui
 | GITLAB_CHECKOUT_SHA | String | - | 8066278648f4277d0842678114f3b1f141bb01ba | git checkout $GITLAB_CHECKOUT_SHA|
 | GITLAB_USER_NAME | String | - | myzhan| |
 | GITLAB_USER_EMAIL | String | - | scau.myzhan@gmail.com ||
-| GITLAB_REPOSITORY_NAME | String | - | https://github.com/myzhan/gitlab-build-plugin ||
+| GITLAB_REPOSITORY_NAME | String | - | gitlab-build-plugin ||
 | GITLAB_REPOSITORY_DESCRIPTION | String | - | a jenkins plugin ||
 | GITLAB_REPOSITORY_HTTP_URL | String | - | https://github.com/myzhan/gitlab-build-plugin.git | git clone $GITLAB_REPOSITORY_HTTP_URL |
 | GITLAB_REPOSITORY_SSH_URL | String | - | git@github.com:myzhan/gitlab-build-plugin.git | git clone $GITLAB_REPOSITORY_SSH_URL |
