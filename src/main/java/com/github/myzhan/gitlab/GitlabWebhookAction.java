@@ -31,6 +31,9 @@ public class GitlabWebhookAction implements Action {
 
         List<ParameterValue> values = new ArrayList<ParameterValue>();
 
+        // add gitlab webhook parameters
+        values.addAll(getParametersFromJsonPayload(request));
+
         // add all parameters with its default value
         ParametersDefinitionProperty paramDefProp = (ParametersDefinitionProperty)project.getProperty(ParametersDefinitionProperty.class);
 
@@ -39,14 +42,12 @@ public class GitlabWebhookAction implements Action {
             for(String item: params){
                 ParameterDefinition pd = paramDefProp.getParameterDefinition(item);
                 ParameterValue defaultValue = pd.getDefaultParameterValue();
-                if (defaultValue != null) {
+                // just ignore the default value, if it has been in the webhook parameters
+                if (defaultValue != null && !values.contains(defaultValue)) {
                     values.add(defaultValue);
                 }
             }
         }
-
-        // add gitlab webhook parameters
-        values.addAll(getParametersFromJsonPayload(request));
 
         List<Action> actions = new ArrayList<Action>();
         actions.add(new ParametersAction(values));
