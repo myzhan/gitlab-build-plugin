@@ -2,9 +2,9 @@
 
 This plugin adds a webhook action to each jenkins project, receives webhook payload from gitlab and triggers a parameterized build.
 
-## Installation
+## Build From Source
 
-Download gitlab-build.hpi, and put it into $JENKINS_HOME/plugins, then restart jenkins.
+Follow the [official plugin tutorial](https://wiki.jenkins-ci.org/display/JENKINS/Plugin+tutorial)
 
 ## Why?
 
