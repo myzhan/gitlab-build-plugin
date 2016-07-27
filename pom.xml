@@ -16,8 +16,8 @@
   <packaging>hpi</packaging>
 
   <name>Gitlab Build Plugin</name>
-  <description>a jenkins plugin that receives webhook payload from gitlab, and trigger a  parameterized build</description>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/Gilab+Build+Plugin</url>
+  <description>a jenkins plugin that receives webhook payload from gitlab, and trigger a parameterized build</description>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/Gitlab+Build+Plugin</url>
   <licenses>
     <license>
       <name>MIT License</name>
