@@ -40,6 +40,8 @@ This plugin extracts several parameters from the json payload, and trigger a bui
 | GITLAB_TAG | String | - | v1.0.0 | pushed tag|
 | GITLAB_OBJECT_KIND | String | - | push | gitlab events, only support push or tag_push|
 | GITLAB_REF | String | - | refs/heads/master | full ref |
+| GITLAB_BEFORE | String | - | 8066278648f4277d0842678114f3b1f141bb01ba | git checkout GITLAB_BEFORE|
+| GITLAB_AFTER | String | - | 8066278648f4277d0842678114f3b1f141bb01ba | git checkout GITLAB_AFTER|
 | GITLAB_CHECKOUT_SHA | String | - | 8066278648f4277d0842678114f3b1f141bb01ba | git checkout $GITLAB_CHECKOUT_SHA|
 | GITLAB_USER_NAME | String | - | myzhan| |
 | GITLAB_USER_EMAIL | String | - | scau.myzhan@gmail.com ||

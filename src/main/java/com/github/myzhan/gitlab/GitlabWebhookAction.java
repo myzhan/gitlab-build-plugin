@@ -84,6 +84,8 @@ public class GitlabWebhookAction implements Action {
             // exposed environment vars
             StringParameterValue objectKind = new StringParameterValue("GITLAB_OBJECT_KIND", payload.getObject_kind());
             StringParameterValue ref = new StringParameterValue("GITLAB_REF", payload.getRef());
+            StringParameterValue before = new StringParameterValue("GITLAB_BEFORE", payload.getBefore());
+            StringParameterValue after = new StringParameterValue("GITLAB_AFTER", payload.getAfter());
             StringParameterValue checkoutSha = new StringParameterValue("GITLAB_CHECKOUT_SHA", payload.getCheckout_sha());
             StringParameterValue userName = new StringParameterValue("GITLAB_USER_NAME", payload.getUser_name());
             StringParameterValue userEmail = new StringParameterValue("GITLAB_USER_EMAIL", payload.getUser_email());
@@ -94,6 +96,8 @@ public class GitlabWebhookAction implements Action {
 
             values.add(objectKind);
             values.add(ref);
+            values.add(before);
+            values.add(after);
             values.add(checkoutSha);
             values.add(userName);
             values.add(userEmail);
