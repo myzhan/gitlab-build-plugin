@@ -24,7 +24,7 @@ public class GitlabWebhookAction implements Action {
         }
 
         Job project = getProject();
-        if (project == null){
+        if (project == null) {
             response.getWriter().print("Can't find any project, make sure your url is correct");
             return;
         }
@@ -35,19 +35,33 @@ public class GitlabWebhookAction implements Action {
         values.addAll(getParametersFromJsonPayload(request));
 
         // add all parameters with its default value
-        ParametersDefinitionProperty paramDefProp = (ParametersDefinitionProperty)project.getProperty(ParametersDefinitionProperty.class);
+        ParametersDefinitionProperty paramDefProp = (ParametersDefinitionProperty) project.getProperty(ParametersDefinitionProperty.class);
 
-        if (paramDefProp != null){
+        List<ParameterValue> fromDefault = new ArrayList<ParameterValue>();
+        if (paramDefProp != null) {
             List<String> params = paramDefProp.getParameterDefinitionNames();
-            for(String item: params){
-                ParameterDefinition pd = paramDefProp.getParameterDefinition(item);
-                ParameterValue defaultValue = pd.getDefaultParameterValue();
-                // just ignore the default value, if it has been in the webhook parameters
-                if (defaultValue != null && !values.contains(defaultValue)) {
-                    values.add(defaultValue);
+            for (String item : params) {
+                boolean ignore = false;
+                for (ParameterValue pv : values) {
+                    if (pv.getName().equals(item)) {
+                        // just ignore the default value, if it has been in the webhook parameters
+                        ignore = true;
+                    }
                 }
+                if (ignore) {
+                    continue;
+                } else {
+                    ParameterDefinition pd = paramDefProp.getParameterDefinition(item);
+                    ParameterValue defaultValue = pd.getDefaultParameterValue();
+                    if (defaultValue != null) {
+                        fromDefault.add(defaultValue);
+                    }
+                }
+
             }
         }
+
+        values.addAll(fromDefault);
 
         List<Action> actions = new ArrayList<Action>();
         actions.add(new ParametersAction(values));
@@ -57,26 +71,26 @@ public class GitlabWebhookAction implements Action {
 
     }
 
-    private List<ParameterValue> getParametersFromJsonPayload(StaplerRequest request){
+    private List<ParameterValue> getParametersFromJsonPayload(StaplerRequest request) {
         String body = readBodyFromRequest(request);
-        if (body == null){
+        if (body == null) {
             return new ArrayList<ParameterValue>();
-        }else{
+        } else {
             // body is ok, start parsing
             List<ParameterValue> values = new ArrayList<ParameterValue>();
             JSONObject jsonPayLoad = JSONObject.fromObject(body);
-            GitlabWebHookPayload payload = (GitlabWebHookPayload)JSONObject.toBean(jsonPayLoad, GitlabWebHookPayload.class);
+            GitlabWebHookPayload payload = (GitlabWebHookPayload) JSONObject.toBean(jsonPayLoad, GitlabWebHookPayload.class);
 
             // extract branch or tag from ref
-            String refStr =  payload.getRef();
-            String refSubStr = refStr.substring(refStr.lastIndexOf("/")+1, refStr.length());
-            if (payload.getObject_kind().equals("push")){
+            String refStr = payload.getRef();
+            String refSubStr = refStr.substring(refStr.lastIndexOf("/") + 1, refStr.length());
+            if (payload.getObject_kind().equals("push")) {
                 // find branch
                 values.add(new StringParameterValue("GITLAB_BRANCH", refSubStr));
-            }else if (payload.getObject_kind().equals("tag_push")){
+            } else if (payload.getObject_kind().equals("tag_push")) {
                 // find tag
                 values.add(new StringParameterValue("GITLAB_TAG", refSubStr));
-            }else{
+            } else {
                 // unknown object kind, do nothing
                 return new ArrayList<ParameterValue>();
             }
@@ -89,10 +103,10 @@ public class GitlabWebhookAction implements Action {
             StringParameterValue checkoutSha = new StringParameterValue("GITLAB_CHECKOUT_SHA", payload.getCheckout_sha());
             StringParameterValue userName = new StringParameterValue("GITLAB_USER_NAME", payload.getUser_name());
             StringParameterValue userEmail = new StringParameterValue("GITLAB_USER_EMAIL", payload.getUser_email());
-            StringParameterValue repositoryName = new StringParameterValue("GITLAB_REPOSITORY_NAME", (String)payload.getRepository().get("name"));
-            StringParameterValue repositoryDescription = new StringParameterValue("GITLAB_REPOSITORY_DESCRIPTION", (String)payload.getRepository().get("description"));
-            StringParameterValue repositoryHttpUrl = new StringParameterValue("GITLAB_REPOSITORY_HTTP_URL", (String)payload.getRepository().get("git_http_url"));
-            StringParameterValue repositorySshUrl = new StringParameterValue("GITLAB_REPOSITORY_SSH_URL", (String)payload.getRepository().get("git_ssh_url"));
+            StringParameterValue repositoryName = new StringParameterValue("GITLAB_REPOSITORY_NAME", (String) payload.getRepository().get("name"));
+            StringParameterValue repositoryDescription = new StringParameterValue("GITLAB_REPOSITORY_DESCRIPTION", (String) payload.getRepository().get("description"));
+            StringParameterValue repositoryHttpUrl = new StringParameterValue("GITLAB_REPOSITORY_HTTP_URL", (String) payload.getRepository().get("git_http_url"));
+            StringParameterValue repositorySshUrl = new StringParameterValue("GITLAB_REPOSITORY_SSH_URL", (String) payload.getRepository().get("git_ssh_url"));
 
             values.add(objectKind);
             values.add(ref);
@@ -113,7 +127,7 @@ public class GitlabWebhookAction implements Action {
     private String readBodyFromRequest(StaplerRequest request) {
         try {
             return IOUtils.toString(request.getInputStream());
-        }catch(IOException ex){
+        } catch (IOException ex) {
             ex.printStackTrace();
             return null;
         }
