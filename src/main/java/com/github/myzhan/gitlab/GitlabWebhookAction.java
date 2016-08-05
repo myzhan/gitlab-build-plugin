@@ -1,7 +1,11 @@
 package com.github.myzhan.gitlab;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import hudson.model.*;
+import hudson.tasks.BuildWrapper;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.map.HashedMap;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -11,11 +15,16 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by myzhan on 15-12-5.
  */
 public class GitlabWebhookAction implements Action {
+
+    private static final Logger LOGGER = Logger.getLogger(GitlabWebhookAction.class.getName());
 
     public void doIndex(StaplerRequest request, StaplerResponse response) throws IOException, ServletException {
         if (request.getMethod().equals("GET")) {
@@ -23,7 +32,8 @@ public class GitlabWebhookAction implements Action {
             return;
         }
 
-        Job project = getProject();
+        Project project = getProject();
+
         if (project == null) {
             response.getWriter().print("Can't find any project, make sure your url is correct");
             return;
@@ -62,6 +72,11 @@ public class GitlabWebhookAction implements Action {
         }
 
         values.addAll(fromDefault);
+
+        if (skippingBuildExpressionMatches(project, values)) {
+            LOGGER.log(Level.INFO, String.format("(Project:%s)Webhook received, but matches skipping build expression, will not trigger a build.", project.getName()));
+            return;
+        }
 
         List<Action> actions = new ArrayList<Action>();
         actions.add(new ParametersAction(values));
@@ -124,6 +139,39 @@ public class GitlabWebhookAction implements Action {
         }
     }
 
+    private boolean skippingBuildExpressionMatches(Project project, List<ParameterValue> values) {
+        String skippingBuildExpression = "";
+
+        Map<Descriptor<BuildWrapper>, BuildWrapper> buildWrappers = project.getBuildWrappers();
+
+        for (Descriptor key : buildWrappers.keySet()) {
+            if (key instanceof SkippingBuildExpressionSetter.DescriptorImpl) {
+                SkippingBuildExpressionSetter value = (SkippingBuildExpressionSetter) buildWrappers.get(key);
+                skippingBuildExpression = value.skippingBuildExpression;
+            }
+        }
+
+        if (skippingBuildExpression.isEmpty()) {
+            return false;
+        }
+
+        Map bindings = new HashedMap();
+        for (ParameterValue value : values) {
+            bindings.put(value.getName(), value.getValue());
+        }
+
+        try {
+            // FIXME: malicious code
+            GroovyShell shell = new GroovyShell(new Binding(bindings));
+            Object result = shell.evaluate(skippingBuildExpression);
+            return result.toString().equals("true") ? true : false;
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, ex.getMessage());
+            return false;
+        }
+
+    }
+
     private String readBodyFromRequest(StaplerRequest request) {
         try {
             return IOUtils.toString(request.getInputStream());
@@ -150,11 +198,11 @@ public class GitlabWebhookAction implements Action {
      *
      * @return currentProject.
      */
-    public Job getProject() {
-        Job currentProject = null;
+    public Project getProject() {
+        Project currentProject = null;
         StaplerRequest request = Stapler.getCurrentRequest();
         if (request != null) {
-            currentProject = request.findAncestorObject(Job.class);
+            currentProject = request.findAncestorObject(Project.class);
         }
         return currentProject;
     }

@@ -1,0 +1,14 @@
+<div>
+    Normally, Gitlab Build Plugin triggers a build, when it receives a webhook. You can change this default behavior,
+    by setting a skipping build expression, that is a groovy expression.
+
+    <p>
+    Once the expression returns true, no build will be triggered, and current webhook will be just ignored.
+
+    <p>
+    The some variables are predefined, GITLAB_* parameters and build parameters. If you want to ignore tag push event,
+    write a expression like this.
+
+    <p>
+    GITLAB_OBJECT_KIND == "tag_push"
+</div>
