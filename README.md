@@ -49,3 +49,11 @@ This plugin extracts several parameters from the json payload, and trigger a bui
 | GITLAB_REPOSITORY_DESCRIPTION | String | - | a jenkins plugin ||
 | GITLAB_REPOSITORY_HTTP_URL | String | - | https://github.com/myzhan/gitlab-build-plugin.git | git clone $GITLAB_REPOSITORY_HTTP_URL |
 | GITLAB_REPOSITORY_SSH_URL | String | - | git@github.com:myzhan/gitlab-build-plugin.git | git clone $GITLAB_REPOSITORY_SSH_URL |
+
+## For Jenkins 2.x
+
+Before Jenkins 2.x, you don't have to define such GITLAB_* parameters in your project. But Jenkins 2.x fixed a security issue by filtering
+
+the build parameters based on what is defined on the job. Check [this article](https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2016-05-11) for details.
+
+If you are using Jenkins 2.x, define the GITLAB_* parameters as you need, and everything works as usual.
