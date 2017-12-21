@@ -2,7 +2,9 @@ package com.github.myzhan.gitlab;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import hudson.Extension;
 import hudson.model.*;
+import hudson.security.csrf.CrumbExclusion;
 import hudson.tasks.BuildWrapper;
 import net.sf.json.JSONObject;
 import org.apache.commons.collections.map.HashedMap;
@@ -11,7 +13,11 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.apache.commons.io.IOUtils;
 
+import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -205,6 +211,22 @@ public class GitlabWebhookAction implements Action {
             currentProject = request.findAncestorObject(Project.class);
         }
         return currentProject;
+    }
+
+    @Extension
+    public static class GitlabWebHookCrumbExclusion extends CrumbExclusion {
+
+        @Override
+        public boolean process(HttpServletRequest req, HttpServletResponse resp,
+                               FilterChain chain) throws IOException, ServletException {
+            String pathInfo = req.getPathInfo();
+            if (pathInfo != null && pathInfo.endsWith("/webhook/")) {
+                chain.doFilter(req, resp);
+                return true;
+            }
+            return false;
+        }
+
     }
 
 
