@@ -1,29 +1,40 @@
 package com.github.myzhan.gitlab;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
-import hudson.Extension;
-import hudson.model.*;
-import hudson.security.csrf.CrumbExclusion;
-import hudson.tasks.BuildWrapper;
-import net.sf.json.JSONObject;
-import org.apache.commons.collections.map.HashedMap;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.apache.commons.io.IOUtils;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+import hudson.Extension;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Descriptor;
+import hudson.model.Hudson;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Project;
+import hudson.model.Queue;
+import hudson.model.StringParameterValue;
+import hudson.security.csrf.CrumbExclusion;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrapperDescriptor;
+import net.sf.json.JSONObject;
+import org.apache.commons.collections.map.HashedMap;
+import org.apache.commons.io.IOUtils;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Created by myzhan on 15-12-5.
@@ -33,7 +44,7 @@ public class GitlabWebhookAction implements Action {
     private static final Logger LOGGER = Logger.getLogger(GitlabWebhookAction.class.getName());
 
     public void doIndex(StaplerRequest request, StaplerResponse response) throws IOException, ServletException {
-        if (request.getMethod().equals("GET")) {
+        if ("GET".equals(request.getMethod())) {
             response.sendRedirect("readme");
             return;
         }
@@ -51,7 +62,8 @@ public class GitlabWebhookAction implements Action {
         values.addAll(getParametersFromJsonPayload(request));
 
         // add all parameters with its default value
-        ParametersDefinitionProperty paramDefProp = (ParametersDefinitionProperty) project.getProperty(ParametersDefinitionProperty.class);
+        ParametersDefinitionProperty paramDefProp = (ParametersDefinitionProperty)project.getProperty(
+            ParametersDefinitionProperty.class);
 
         List<ParameterValue> fromDefault = new ArrayList<ParameterValue>();
         if (paramDefProp != null) {
@@ -80,14 +92,16 @@ public class GitlabWebhookAction implements Action {
         values.addAll(fromDefault);
 
         if (skippingBuildExpressionMatches(project, values)) {
-            LOGGER.log(Level.INFO, String.format("(Project:%s)Webhook received, but matches skipping build expression, will not trigger a build.", project.getName()));
+            LOGGER.log(Level.INFO, String.format(
+                "(Project:%s)Webhook received, but matches skipping build expression, will not trigger a build.",
+                project.getName()));
             return;
         }
 
         List<Action> actions = new ArrayList<Action>();
         actions.add(new ParametersAction(values));
 
-        Hudson.getInstance().getQueue().schedule((Queue.Task) project, 0, actions);
+        Hudson.getInstance().getQueue().schedule((Queue.Task)project, 0, actions);
         response.getWriter().print("ok, scheduled.");
 
     }
@@ -100,15 +114,16 @@ public class GitlabWebhookAction implements Action {
             // body is ok, start parsing
             List<ParameterValue> values = new ArrayList<ParameterValue>();
             JSONObject jsonPayLoad = JSONObject.fromObject(body);
-            GitlabWebHookPayload payload = (GitlabWebHookPayload) JSONObject.toBean(jsonPayLoad, GitlabWebHookPayload.class);
+            GitlabWebHookPayload payload = (GitlabWebHookPayload)JSONObject.toBean(jsonPayLoad,
+                GitlabWebHookPayload.class);
 
             // extract branch or tag from ref
             String refStr = payload.getRef();
             String refSubStr = refStr.substring(refStr.lastIndexOf("/") + 1, refStr.length());
-            if (payload.getObject_kind().equals("push")) {
+            if ("push".equals(payload.getObject_kind())) {
                 // find branch
                 values.add(new StringParameterValue("GITLAB_BRANCH", refSubStr));
-            } else if (payload.getObject_kind().equals("tag_push")) {
+            } else if ("tag_push".equals(payload.getObject_kind())) {
                 // find tag
                 values.add(new StringParameterValue("GITLAB_TAG", refSubStr));
             } else {
@@ -121,13 +136,18 @@ public class GitlabWebhookAction implements Action {
             StringParameterValue ref = new StringParameterValue("GITLAB_REF", payload.getRef());
             StringParameterValue before = new StringParameterValue("GITLAB_BEFORE", payload.getBefore());
             StringParameterValue after = new StringParameterValue("GITLAB_AFTER", payload.getAfter());
-            StringParameterValue checkoutSha = new StringParameterValue("GITLAB_CHECKOUT_SHA", payload.getCheckout_sha());
+            StringParameterValue checkoutSha = new StringParameterValue("GITLAB_CHECKOUT_SHA",
+                payload.getCheckout_sha());
             StringParameterValue userName = new StringParameterValue("GITLAB_USER_NAME", payload.getUser_name());
             StringParameterValue userEmail = new StringParameterValue("GITLAB_USER_EMAIL", payload.getUser_email());
-            StringParameterValue repositoryName = new StringParameterValue("GITLAB_REPOSITORY_NAME", (String) payload.getRepository().get("name"));
-            StringParameterValue repositoryDescription = new StringParameterValue("GITLAB_REPOSITORY_DESCRIPTION", (String) payload.getRepository().get("description"));
-            StringParameterValue repositoryHttpUrl = new StringParameterValue("GITLAB_REPOSITORY_HTTP_URL", (String) payload.getRepository().get("git_http_url"));
-            StringParameterValue repositorySshUrl = new StringParameterValue("GITLAB_REPOSITORY_SSH_URL", (String) payload.getRepository().get("git_ssh_url"));
+            StringParameterValue repositoryName = new StringParameterValue("GITLAB_REPOSITORY_NAME",
+                (String)payload.getRepository().get("name"));
+            StringParameterValue repositoryDescription = new StringParameterValue("GITLAB_REPOSITORY_DESCRIPTION",
+                (String)payload.getRepository().get("description"));
+            StringParameterValue repositoryHttpUrl = new StringParameterValue("GITLAB_REPOSITORY_HTTP_URL",
+                (String)payload.getRepository().get("git_http_url"));
+            StringParameterValue repositorySshUrl = new StringParameterValue("GITLAB_REPOSITORY_SSH_URL",
+                (String)payload.getRepository().get("git_ssh_url"));
 
             values.add(objectKind);
             values.add(ref);
@@ -152,7 +172,7 @@ public class GitlabWebhookAction implements Action {
 
         for (Descriptor key : buildWrappers.keySet()) {
             if (key instanceof SkippingBuildExpressionSetter.DescriptorImpl) {
-                SkippingBuildExpressionSetter value = (SkippingBuildExpressionSetter) buildWrappers.get(key);
+                SkippingBuildExpressionSetter value = (SkippingBuildExpressionSetter)buildWrappers.get(key);
                 skippingBuildExpression = value.skippingBuildExpression;
             }
         }
@@ -187,14 +207,17 @@ public class GitlabWebhookAction implements Action {
         }
     }
 
+    @Override
     public String getIconFileName() {
         return "clock.gif";
     }
 
+    @Override
     public String getDisplayName() {
         return "Gitlab Webhook";
     }
 
+    @Override
     public String getUrlName() {
         return "webhook";
     }
@@ -228,6 +251,5 @@ public class GitlabWebhookAction implements Action {
         }
 
     }
-
 
 }
